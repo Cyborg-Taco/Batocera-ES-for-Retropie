@@ -10,7 +10,7 @@
 #  Also installs ES-X theme browser previews (esx/theme-previews).
 # ============================================================
 
-rp_module_id="emulationstation-es-x"
+rp_module_id="batocera-es-for-retropie"
 rp_module_desc="EmulationStation-X (ES-X) - Experimental fork with .ini language and theme enhancements (replaces standard EmulationStation)"
 rp_module_help="After installing, ES-X becomes the main frontend. Includes automatic language .ini installation, Theme Browser previews, default ES-X theme, and Skyscraper integration."
 rp_module_section="exp"
