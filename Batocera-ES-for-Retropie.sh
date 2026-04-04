@@ -12,14 +12,14 @@
 
 rp_module_id="batocera-es-for-retropie"
 rp_module_desc="EmulationStation-X (ES-X) - Experimental fork with .ini language and theme enhancements (replaces standard EmulationStation)"
-rp_module_help="After installing, ES-X becomes the main frontend. Includes automatic language .ini installation, Theme Browser previews, default ES-X theme, and Skyscraper integration."
+rp_module_help="After installing, Batocera ES becomes the main frontend."
 rp_module_section="exp"
 rp_module_flags="frontend"
 
-rp_module_licence="MIT https://github.com/Aloshi/EmulationStation/blob/master/LICENSE"
+rp_module_licence="MIT https://github.com/batocera-linux/batocera-emulationstation/blob/master/LICENSE.md"
 
 # ES-X repository
-rp_module_repo="git https://github.com/Renetrox/EmulationStation-X main"
+rp_module_repo="git https://github.com/Cyborg-Taco/Batocera-ES-for-Retropie"
 
 # ------------------------------------------------------------
 # Link to base EmulationStation build system
