@@ -19,7 +19,7 @@ rp_module_flags="frontend"
 rp_module_licence="MIT https://github.com/batocera-linux/batocera-emulationstation/blob/master/LICENSE.md"
 
 # ES-X repository
-rp_module_repo="git https://github.com/Cyborg-Taco/Batocera-ES-for-Retropie"
+rp_module_repo="git https://github.com/Cyborg-Taco/Batocera-ES-for-Retropie main"
 
 # ------------------------------------------------------------
 # Link to base EmulationStation build system
