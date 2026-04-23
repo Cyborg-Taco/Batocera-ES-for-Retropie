@@ -9,18 +9,18 @@
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
 #
 
-rp_module_id="emulationstation"
+rp_module_id="Batocera-ES-for-Retropie"
 rp_module_desc="Batocera EmulationStation for RetroPie"
 rp_module_licence="MIT https://raw.githubusercontent.com/Cyborg-Taco/Batocera-ES-for-Retropie/master/LICENSE.md"
 rp_module_repo="git https://github.com/Cyborg-Taco/Batocera-ES-for-Retropie.git"
-rp_module_section="core"
+rp_module_section="exp"
 rp_module_flags="frontend"
 
 function _get_input_cfg_emulationstation() {
     echo "$configdir/all/emulationstation/es_input.cfg"
 }
 
-function _update_hook_emulationstation() {
+function _update_hook_Batocera-ES-for-Retropie() {
     # make sure the input configuration scripts and launch script are always up to date
     if rp_isInstalled "$md_id"; then
         copy_inputscripts_emulationstation
@@ -128,7 +128,7 @@ function _add_rom_emulationstation() {
     chown "$__user":"$__group" "$config"
 }
 
-function depends_emulationstation() {
+function depends_Batocera-ES-for-Retropie() {
     local depends=(
         libsdl2-dev libsdl2-mixer-dev libfreeimage-dev libfreetype6-dev
         libcurl4-openssl-dev rapidjson-dev libasound2-dev libgl1-mesa-dev build-essential
@@ -142,7 +142,7 @@ function depends_emulationstation() {
     getDepends "${depends[@]}"
 }
 
-function _get_branch_emulationstation() {
+function _get_branch_Batocera-ES-for-Retropie() {
     if [[ -z "$branch" ]]; then
         if [[ "$__os_debian_ver" -gt 8 ]]; then
             branch="stable"
@@ -153,12 +153,12 @@ function _get_branch_emulationstation() {
     echo "$branch"
 }
 
-function sources_emulationstation() {
+function sources_Batocera-ES-for-Retropie() {
     gitPullOrClone
     git submodule update --init
 }
 
-function build_emulationstation() {
+function build_Batocera-ES-for-Retropie() {
     rpSwap on 1000
     cmake .
     cmake -DUSE_MESA_GLES=On .
@@ -182,7 +182,7 @@ function _remove_stock_emulationstation() {
     fi
 }
 
-function install_emulationstation() {
+function install_Batocera-ES-for-Retropie() {
     md_ret_files=(
         'CREDITS.md'
         'emulationstation'
@@ -283,14 +283,14 @@ function clear_input_emulationstation() {
     init_input_emulationstation
 }
 
-function remove_emulationstation() {
+function remove_Batocera-ES-for-Retropie() {
     rm -f "/usr/bin/emulationstation"
     if isPlatform "x11"; then
         rm -rfv "/usr/local/share/icons/retropie.svg" "/usr/local/share/applications/retropie.desktop"
     fi
 }
 
-function configure_emulationstation() {
+function configure_Batocera-ES-for-Retropie() {
     # move the $home/emulationstation configuration dir and symlink it
     moveConfigDir "$home/.emulationstation" "$configdir/all/emulationstation"
 
@@ -321,7 +321,7 @@ function configure_emulationstation() {
     addAutoConf "disable" 0
 }
 
-function gui_emulationstation() {
+function gui_Batocera-ES-for-Retropie() {
     local es_swap=0
     getAutoConf "es_swap_a_b" && es_swap=1
 
