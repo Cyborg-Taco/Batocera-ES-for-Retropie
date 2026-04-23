@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# This file is part of The RetroPie Project
+# This file was orginaly apart of The RetroPie Project and was modified by Cyborg-Taco to be used as a standalone package for installing Batocera's EmulationStation on top of RetroPie. The original license and copyright notice is retained below.
 #
 # The RetroPie Project is the legal property of its developers, whose names are
 # too numerous to list here. Please refer to the COPYRIGHT.md file distributed with this source.
