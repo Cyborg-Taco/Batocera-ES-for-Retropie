@@ -14,3 +14,9 @@ When installed through RetroPie-Setup, this package installs its launcher to bot
   sudo ./retropie_setup.sh
 ```
 Then go to Manage Packages > Experimental > Batocera-ES-for-Retropie > Install.
+
+## Updating
+After the package has been installed once through RetroPie-Setup, its package submenu will check the configured Git branch/tag for a newer revision and show an update option when one is available.
+
+Use:
+`Manage Packages > Experimental > Batocera-ES-for-Retropie > Update Batocera-ES-for-Retropie`

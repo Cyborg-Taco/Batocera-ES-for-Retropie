@@ -26,6 +26,7 @@ function _update_hook_Batocera-ES-for-Retropie() {
         copy_inputscripts_emulationstation
         install_savestates_emulationstation
         install_launch_emulationstation
+        _write_installed_version_Batocera-ES-for-Retropie
     fi
 }
 
@@ -152,6 +153,80 @@ function _get_branch_Batocera-ES-for-Retropie() {
         fi
     fi
     echo "$branch"
+}
+
+function _get_repo_url_Batocera-ES-for-Retropie() {
+    local repo_type repo_url
+    read -r repo_type repo_url _ <<<"$rp_module_repo"
+    echo "$repo_url"
+}
+
+function _get_version_file_Batocera-ES-for-Retropie() {
+    echo "$md_inst/.retropie-module-version"
+}
+
+function _get_source_hash_Batocera-ES-for-Retropie() {
+    if [[ -d "$md_build/.git" ]]; then
+        git -C "$md_build" rev-parse HEAD 2>/dev/null
+    fi
+}
+
+function _get_installed_hash_Batocera-ES-for-Retropie() {
+    local version_file="$(_get_version_file_Batocera-ES-for-Retropie)"
+    if [[ -f "$version_file" ]]; then
+        sed -n 's/^commit=//p' "$version_file"
+        return
+    fi
+
+    _get_source_hash_Batocera-ES-for-Retropie
+}
+
+function _write_installed_version_Batocera-ES-for-Retropie() {
+    local version_file="$(_get_version_file_Batocera-ES-for-Retropie)"
+    local branch_name="$(_get_branch_Batocera-ES-for-Retropie)"
+    local commit_hash="$(_get_source_hash_Batocera-ES-for-Retropie)"
+
+    [[ -n "$commit_hash" ]] || return 0
+
+    mkdir -p "$md_inst"
+    cat > "$version_file" << _EOF_
+branch=$branch_name
+commit=$commit_hash
+_EOF_
+}
+
+function _get_remote_hash_Batocera-ES-for-Retropie() {
+    local repo_url="$(_get_repo_url_Batocera-ES-for-Retropie)"
+    local branch_name="$(_get_branch_Batocera-ES-for-Retropie)"
+    local remote_hash
+
+    [[ -n "$repo_url" ]] || return 1
+
+    remote_hash=$(git ls-remote --heads "$repo_url" "$branch_name" 2>/dev/null | awk 'NR==1 { print $1 }')
+    if [[ -z "$remote_hash" ]]; then
+        remote_hash=$(git ls-remote --tags "$repo_url" "$branch_name^{}" 2>/dev/null | awk 'NR==1 { print $1 }')
+    fi
+    if [[ -z "$remote_hash" ]]; then
+        remote_hash=$(git ls-remote --tags "$repo_url" "$branch_name" 2>/dev/null | awk 'NR==1 { print $1 }')
+    fi
+
+    [[ -n "$remote_hash" ]] || return 1
+    echo "$remote_hash"
+}
+
+function _check_updates_Batocera-ES-for-Retropie() {
+    local installed_hash="$(_get_installed_hash_Batocera-ES-for-Retropie)"
+    local remote_hash="$(_get_remote_hash_Batocera-ES-for-Retropie)"
+
+    [[ -n "$installed_hash" ]] || return 2
+    [[ -n "$remote_hash" ]] || return 3
+
+    if [[ "$installed_hash" != "$remote_hash" ]]; then
+        echo "$remote_hash"
+        return 0
+    fi
+
+    return 1
 }
 
 function sources_Batocera-ES-for-Retropie() {
@@ -347,6 +422,8 @@ function remove_Batocera-ES-for-Retropie() {
     if isPlatform "x11"; then
         rm -rfv "/usr/local/share/icons/retropie.svg" "/usr/local/share/applications/retropie.desktop"
     fi
+
+    rm -f "$(_get_version_file_Batocera-ES-for-Retropie)"
 }
 
 function configure_Batocera-ES-for-Retropie() {
@@ -380,6 +457,8 @@ function configure_Batocera-ES-for-Retropie() {
 
     addAutoConf "es_swap_a_b" 0
     addAutoConf "disable" 0
+
+    _write_installed_version_Batocera-ES-for-Retropie
 }
 
 function gui_Batocera-ES-for-Retropie() {
@@ -392,6 +471,11 @@ function gui_Batocera-ES-for-Retropie() {
     local default
     local options
     while true; do
+        local update_hash
+        local update_status=1
+        update_hash="$(_check_updates_Batocera-ES-for-Retropie)"
+        update_status=$?
+
         local options=(
             1 "Clear/Reset Emulation Station input configuration"
         )
@@ -407,6 +491,21 @@ function gui_Batocera-ES-for-Retropie() {
         else
             options+=(3 "Swap A/B Buttons in ES (Currently: Swapped)")
         fi
+
+        case "$update_status" in
+            0)
+                options+=(4 "Update Batocera-ES-for-Retropie (Update Available)")
+                ;;
+            1)
+                options+=(4 "Check for Batocera-ES-for-Retropie Updates")
+                ;;
+            2)
+                options+=(4 "Update Batocera-ES-for-Retropie (Version Unknown)")
+                ;;
+            *)
+                options+=(4 "Check for Batocera-ES-for-Retropie Updates (Network Error)")
+                ;;
+        esac
 
         local cmd=(dialog --backtitle "$__backtitle" --default-item "$default" --menu "Choose an option" 22 76 16)
         local choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
@@ -431,6 +530,32 @@ function gui_Batocera-ES-for-Retropie() {
                 getAutoConf "es_swap_a_b" && ra_swap="true"
                 iniSet "menu_swap_ok_cancel_buttons" "$ra_swap" "$configdir/all/retroarch.cfg"
                 printMsgs "dialog" "You will need to reconfigure you controller in Emulation Station for the changes to take effect."
+                ;;
+            4)
+                if [[ "$update_status" -eq 0 ]]; then
+                    local setup_dir="$home/RetroPie-Setup"
+                    local setup_script="$setup_dir/retropie_setup.sh"
+                    local branch_name="$(_get_branch_Batocera-ES-for-Retropie)"
+                    local installed_hash="$(_get_installed_hash_Batocera-ES-for-Retropie)"
+                    local installed_short="${installed_hash:0:7}"
+                    local remote_short="${update_hash:0:7}"
+
+                    if [[ -x "$setup_script" ]]; then
+                        if dialog --defaultno --yesno "Update available on $branch_name.\n\nInstalled: ${installed_short:-unknown}\nLatest: $remote_short\n\nRun the RetroPie-Setup install step now to update Batocera-ES-for-Retropie?" 22 76 2>&1 >/dev/tty; then
+                            pushd "$setup_dir" >/dev/null || break
+                            sudo ./retropie_setup.sh "$md_id" install
+                            popd >/dev/null || break
+                        fi
+                    else
+                        printMsgs "dialog" "RetroPie-Setup was not found at $setup_dir. Run the install step manually to update Batocera-ES-for-Retropie."
+                    fi
+                elif [[ "$update_status" -eq 1 ]]; then
+                    printMsgs "dialog" "Batocera-ES-for-Retropie is already up to date."
+                elif [[ "$update_status" -eq 2 ]]; then
+                    printMsgs "dialog" "The installed version could not be determined yet. Reinstall the package once to record its current version, then update checks will work normally."
+                else
+                    printMsgs "dialog" "Unable to check for updates right now. Please verify network access and try again."
+                fi
                 ;;
         esac
     done
