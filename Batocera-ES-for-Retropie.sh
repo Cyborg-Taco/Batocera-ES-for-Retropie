@@ -229,6 +229,40 @@ function copy_inputscripts_emulationstation() {
     chmod +x "$md_inst/scripts/inputconfiguration.sh"
 }
 
+function install_savestates_emulationstation() {
+    local es_config_dir="$configdir/all/emulationstation"
+    local savestates_cfg="$es_config_dir/es_savestates.cfg"
+
+    mkUserDir "$es_config_dir"
+
+    cat > "$savestates_cfg" << _EOF_
+<savestates>
+  <emulator
+    name="retroarch"
+    directory="$romdir/{{system}}/saves"
+    file="{{romfilename}}.state{{slot}}"
+    image="{{romfilename}}.state{{slot}}.png"
+    nofileextension="true"
+    firstslot="0"
+    autosave="true"
+    autosave_file="{{romfilename}}.state.auto"
+    autosave_image="{{romfilename}}.state.auto.png"
+    incremental="true"
+  />
+</savestates>
+_EOF_
+
+    chown "$__user":"$__group" "$savestates_cfg"
+
+    if [[ -d "$romdir" ]]; then
+        for system_dir in "$romdir"/*; do
+            [[ -d "$system_dir" ]] || continue
+            mkdir -p "$system_dir/saves"
+            chown "$__user":"$__group" "$system_dir/saves"
+        done
+    fi
+}
+
 function install_launch_emulationstation() {
     cat > /usr/bin/emulationstation << _EOF_
 #!/bin/bash
@@ -309,6 +343,8 @@ function configure_Batocera-ES-for-Retropie() {
     init_input_emulationstation
 
     copy_inputscripts_emulationstation
+
+    install_savestates_emulationstation
 
     install_launch_emulationstation
 

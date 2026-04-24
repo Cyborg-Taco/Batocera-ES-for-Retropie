@@ -57,6 +57,9 @@ std::string SaveStateConfig::getDirectory(SystemData* system)
 	if (!Utils::String::startsWith(path, "/"))
 		path = Utils::FileSystem::combine(Paths::getSavesPath(), path);
 
+	if (!path.empty() && !Utils::FileSystem::isDirectory(path))
+		Utils::FileSystem::createDirectory(path);
+
 	return path;
 }
 

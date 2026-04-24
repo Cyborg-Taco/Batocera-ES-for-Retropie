@@ -70,6 +70,13 @@ std::string SaveState::setupSaveState(FileData* game, const std::string& command
 		return command;
 
 	std::string cmd = command;
+	auto system = game->getSourceFileData()->getSystem();
+
+	if (system != nullptr)
+	{
+		for (auto saveConfig : SaveStateConfigFile::getSaveStateConfigs(system))
+			Utils::FileSystem::createDirectory(saveConfig->getDirectory(system));
+	}
 
 	// Savestate has core information ? Setup correct emulator/core
 	if (slot >= -1 && this->config != nullptr && !config->isActiveConfig(game) && !racommands)
