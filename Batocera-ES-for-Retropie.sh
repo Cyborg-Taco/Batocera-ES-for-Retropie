@@ -324,6 +324,7 @@ function install_savestates_emulationstation() {
     autosave_file="{{romfilename}}.state.auto"
     autosave_image="{{romfilename}}.state.auto.png"
     incremental="true"
+    racommands="true"
   />
 </savestates>
 _EOF_

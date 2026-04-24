@@ -17,6 +17,8 @@ struct SaveState
 	std::string screenshot;
 	std::string fileGenerator;
   	std::string imageGenerator;
+	std::string autosaveFileGenerator;
+	std::string autosaveImageGenerator;
   	bool hasAutosave;
   	bool racommands;
 	std::string getScreenShot() const;
@@ -31,6 +33,7 @@ struct SaveState
 
 public:
 	virtual std::string makeStateFilename(int slot, bool fullPath = true, bool useImageGenerator = false) const;
+	std::string makeAutoSaveFilename(bool fullPath = true, bool useImageGenerator = false) const;
 
 	std::string setupSaveState(FileData* game, const std::string& command);
 	void onGameEnded(FileData* game);
