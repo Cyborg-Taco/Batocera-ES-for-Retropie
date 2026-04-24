@@ -293,6 +293,19 @@ tput cnorm
 _EOF_
     chmod +x /usr/bin/emulationstation
 
+    local default_es_dir="$rootdir/supplementary/emulationstation"
+    local default_es_bin="$default_es_dir/emulationstation"
+    local default_es_backup="$default_es_bin.stock"
+
+    mkdir -p "$default_es_dir"
+
+    if [[ -f "$default_es_bin" ]] && [[ ! -f "$default_es_backup" ]] && ! cmp -s /usr/bin/emulationstation "$default_es_bin"; then
+        cp "$default_es_bin" "$default_es_bin.stock"
+    fi
+
+    cp /usr/bin/emulationstation "$default_es_bin"
+    chmod +x "$default_es_bin"
+
     if isPlatform "x11"; then
         mkdir -p /usr/local/share/{icons,applications}
         cp "$scriptdir/scriptmodules/$md_type/emulationstation/retropie.svg" "/usr/local/share/icons/"
@@ -320,6 +333,17 @@ function clear_input_emulationstation() {
 
 function remove_Batocera-ES-for-Retropie() {
     rm -f "/usr/bin/emulationstation"
+
+    local default_es_dir="$rootdir/supplementary/emulationstation"
+    local default_es_bin="$default_es_dir/emulationstation"
+    local default_es_backup="$default_es_bin.stock"
+
+    if [[ -f "$default_es_backup" ]]; then
+        mv -f "$default_es_backup" "$default_es_bin"
+    else
+        rm -f "$default_es_bin"
+    fi
+
     if isPlatform "x11"; then
         rm -rfv "/usr/local/share/icons/retropie.svg" "/usr/local/share/applications/retropie.desktop"
     fi

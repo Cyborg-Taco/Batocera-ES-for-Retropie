@@ -1,5 +1,7 @@
 Installation
 
+When installed through RetroPie-Setup, this package installs its launcher to both `/usr/bin/emulationstation` and RetroPie's default frontend path at `/opt/retropie/supplementary/emulationstation/emulationstation`. That makes Batocera EmulationStation replace the stock frontend automatically after install, without a manual binary swap.
+
 👇Ignore below I have not got around to removing it👇
 EmulationStation
 ================
