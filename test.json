@@ -1,0 +1,361 @@
+{
+  "repository": "My Custom Feed",
+  "group": "CUSTOM",
+  "packages": [
+    {
+      "name": "Beatmania",
+      "description": "GB ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/gb/Beatmania.gbc",
+      "install_dir": "gb"
+    },
+
+    {
+      "name": "Advance Wars (Rev 1)",
+      "description": "GBA ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/gba/Advance%20Wars%20(USA)%20(Rev%201).gba",
+      "install_dir": "gba"
+    },
+    {
+      "name": "Advance Wars 2 - Black Hole Rising",
+      "description": "GBA ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/gba/Advance%20Wars%202%20-%20Black%20Hole%20Rising%20(USA,%20Australia).gba",
+      "install_dir": "gba"
+    },
+    {
+      "name": "The Legend of Zelda - The Minish Cap",
+      "description": "GBA ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/gba/Legend%20of%20Zelda,%20The%20-%20The%20Minish%20Cap%20(USA).gba",
+      "install_dir": "gba"
+    },
+    {
+      "name": "Mario vs. Donkey Kong",
+      "description": "GBA ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/gba/Mario%20vs.%20Donkey%20Kong%20(USA,%20Australia).gba",
+      "install_dir": "gba"
+    },
+
+    {
+      "name": "glufPD",
+      "description": "Mega Drive ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/megadrive/glufPD.bin",
+      "install_dir": "megadrive"
+    },
+    {
+      "name": "Sonic & Knuckles + Sonic The Hedgehog 3",
+      "description": "Mega Drive ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/megadrive/Sonic%20%26%20Knuckles%20%2B%20Sonic%20The%20Hedgehog%203%20(Europe).md",
+      "install_dir": "megadrive"
+    },
+    {
+      "name": "Sonic 3D Blast",
+      "description": "Mega Drive ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/megadrive/Sonic%203D%20Blast%20~%20Sonic%203D%20Flickies'%20Island%20(USA,%20Europe,%20Korea).md",
+      "install_dir": "megadrive"
+    },
+    {
+      "name": "Sonic The Hedgehog",
+      "description": "Mega Drive ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/megadrive/Sonic%20The%20Hedgehog%20(USA,%20Europe).md",
+      "install_dir": "megadrive"
+    },
+    {
+      "name": "Sonic The Hedgehog 2",
+      "description": "Mega Drive ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/megadrive/Sonic%20The%20Hedgehog%202%20(World)%20(Rev%20A).md",
+      "install_dir": "megadrive"
+    },
+
+    {
+      "name": "Banjo-Kazooie",
+      "description": "N64 ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/n64/Banjo-Kazooie%20(USA)%20(Rev%201).z64",
+      "install_dir": "n64"
+    },
+    {
+      "name": "Bomberman 64",
+      "description": "N64 ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/n64/Bomberman%2064%20(USA).z64",
+      "install_dir": "n64"
+    },
+    {
+      "name": "Cruis'n USA",
+      "description": "N64 ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/n64/Cruis'n%20USA%20(U)%20(V1.2)%20%5B!%5D.z64",
+      "install_dir": "n64"
+    },
+    {
+      "name": "Diddy Kong Racing",
+      "description": "N64 ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/n64/Diddy%20Kong%20Racing%20(USA)%20(En,Fr)%20(Rev%201).z64",
+      "install_dir": "n64"
+    },
+    {
+      "name": "Donkey Kong 64",
+      "description": "N64 ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/n64/Donkey%20Kong%2064%20(USA).z64",
+      "install_dir": "n64"
+    },
+    {
+      "name": "Doom 64",
+      "description": "N64 ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/n64/Doom%2064%20(USA)%20(Rev%201).z64",
+      "install_dir": "n64"
+    },
+    {
+      "name": "F-Zero X",
+      "description": "N64 ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/n64/F-Zero%20X%20(USA).z64",
+      "install_dir": "n64"
+    },
+    {
+      "name": "Kirby 64 - The Crystal Shards",
+      "description": "N64 ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/n64/Kirby%2064%20-%20The%20Crystal%20Shards%20(USA).z64",
+      "install_dir": "n64"
+    },
+    {
+      "name": "Mario Kart 64",
+      "description": "N64 ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/n64/Mario%20Kart%2064%20(USA).z64",
+      "install_dir": "n64"
+    },
+    {
+      "name": "Mario Party",
+      "description": "N64 ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/n64/Mario%20Party%20(USA).z64",
+      "install_dir": "n64"
+    },
+    {
+      "name": "Mario Party 2",
+      "description": "N64 ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/n64/Mario%20Party%202%20(USA).z64",
+      "install_dir": "n64"
+    },
+    {
+      "name": "Mario Party 3",
+      "description": "N64 ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/n64/Mario%20Party%203%20(USA).z64",
+      "install_dir": "n64"
+    },
+    {
+      "name": "Mario Tennis",
+      "description": "N64 ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/n64/Mario%20Tennis%20(USA).z64",
+      "install_dir": "n64"
+    },
+    {
+      "name": "Paper Mario",
+      "description": "N64 ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/n64/Paper%20Mario%20(USA).z64",
+      "install_dir": "n64"
+    },
+    {
+      "name": "Pokemon Stadium",
+      "description": "N64 ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/n64/Pokemon%20Stadium%20(USA)%20(Rev%202).z64",
+      "install_dir": "n64"
+    },
+    {
+      "name": "Pokemon Stadium 2",
+      "description": "N64 ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/n64/Pokemon%20Stadium%202%20(USA).z64",
+      "install_dir": "n64"
+    },
+    {
+      "name": "Spider-Man",
+      "description": "N64 ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/n64/Spider-Man%20(USA).z64",
+      "install_dir": "n64"
+    },
+    {
+      "name": "Star Fox 64",
+      "description": "N64 ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/n64/Star%20Fox%2064%20(USA)%20(Rev%201).z64",
+      "install_dir": "n64"
+    },
+    {
+      "name": "Super Mario 64",
+      "description": "N64 ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/n64/Super%20Mario%2064%20(USA).z64",
+      "install_dir": "n64"
+    },
+    {
+      "name": "Super Smash Bros.",
+      "description": "N64 ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/n64/Super%20Smash%20Bros.%20(USA).z64",
+      "install_dir": "n64"
+    },
+    {
+      "name": "Tony Hawk's Pro Skater 3",
+      "description": "N64 ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/n64/Tony%20Hawk's%20Pro%20Skater%203%20(USA).z64",
+      "install_dir": "n64"
+    },
+    {
+      "name": "Toy Story 2 - Buzz Lightyear to the Rescue!",
+      "description": "N64 ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/n64/Toy%20Story%202%20-%20Buzz%20Lightyear%20to%20the%20Rescue!%20(USA)%20(Rev%201).z64",
+      "install_dir": "n64"
+    },
+    {
+      "name": "Wave Race 64",
+      "description": "N64 ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/n64/Wave%20Race%2064%20(U)%20(V1.1)%20%5B!%5D.z64",
+      "install_dir": "n64"
+    },
+    {
+      "name": "Yoshi's Story",
+      "description": "N64 ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/n64/Yoshi's%20Story%20(USA)%20(En,Ja).z64",
+      "install_dir": "n64"
+    },
+
+    {
+      "name": "Adventure Island 3",
+      "description": "NES ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/nes/Adventure%20Island%203%20(USA).nes",
+      "install_dir": "nes"
+    },
+    {
+      "name": "Famidash 1.3 Beta",
+      "description": "NES ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/nes/Famidash%201.3%20Beta.nes",
+      "install_dir": "nes"
+    },
+    {
+      "name": "The Legend of Zelda",
+      "description": "NES ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/nes/Legend%20of%20Zelda,%20The%20(USA)%20(Rev%201).nes",
+      "install_dir": "nes"
+    },
+    {
+      "name": "Mario Bros.",
+      "description": "NES ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/nes/Mario%20Bros.%20(World).nes",
+      "install_dir": "nes"
+    },
+    {
+      "name": "Mega Man",
+      "description": "NES ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/nes/Mega%20Man%20(USA).nes",
+      "install_dir": "nes"
+    },
+    {
+      "name": "Mega Man 2",
+      "description": "NES ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/nes/Mega%20Man%202%20(USA).nes",
+      "install_dir": "nes"
+    },
+    {
+      "name": "Mega Man 3",
+      "description": "NES ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/nes/Mega%20Man%203%20(USA).nes",
+      "install_dir": "nes"
+    },
+    {
+      "name": "Metroid",
+      "description": "NES ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/nes/Metroid%20(USA).nes",
+      "install_dir": "nes"
+    },
+    {
+      "name": "Snow Brothers",
+      "description": "NES ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/nes/Snow%20Brothers%20(USA).nes",
+      "install_dir": "nes"
+    },
+    {
+      "name": "Super Mario Bros. + Duck Hunt",
+      "description": "NES ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/nes/Super%20Mario%20Bros.%20%2B%20Duck%20Hunt%20(USA).nes",
+      "install_dir": "nes"
+    },
+    {
+      "name": "Super Mario Bros. 2",
+      "description": "NES ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/nes/Super%20Mario%20Bros.%202%20(USA)%20(Rev%201).nes",
+      "install_dir": "nes"
+    },
+    {
+      "name": "Super Mario Bros. 3",
+      "description": "NES ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/nes/Super%20Mario%20Bros.%203%20(USA)%20(Rev%201).nes",
+      "install_dir": "nes"
+    },
+
+    {
+      "name": "Donkey Kong Country",
+      "description": "SNES ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/snes/Donkey%20Kong%20Country%20(U)%20(V1.2)%20%5B!%5D.smc",
+      "install_dir": "snes"
+    },
+    {
+      "name": "Donkey Kong Country 2 - Diddy's Kong Quest",
+      "description": "SNES ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/snes/Donkey%20Kong%20Country%202%20-%20Diddy's%20Kong%20Quest%20(USA)%20(En,Fr)%20(Rev%201).sfc",
+      "install_dir": "snes"
+    },
+    {
+      "name": "Lemmings",
+      "description": "SNES ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/snes/Lemmings%20(U)%20(V1.1)%20%5B!%5D.smc",
+      "install_dir": "snes"
+    },
+    {
+      "name": "Lemmings 2 - The Tribes",
+      "description": "SNES ROM",
+      "install_type": "file",
+      "install_url": "https://github.com/Cyborg-Taco/Rom-Collection/raw/refs/heads/main/snes/Lemmings%202%20-%20The%20Tribes%20(USA).sfc",
+      "install_dir": "snes"
+    }
+  ]
+}

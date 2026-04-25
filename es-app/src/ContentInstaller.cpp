@@ -9,23 +9,38 @@
 
 ContentInstaller*						ContentInstaller::mInstance = nullptr;
 std::mutex								ContentInstaller::mLock;
-std::list<std::pair<int, std::string>>	ContentInstaller::mQueue;
-std::list<std::pair<int, std::string>>	ContentInstaller::mProcessingQueue;
+std::list<ContentInstaller::ContentTask>	ContentInstaller::mQueue;
+std::list<ContentInstaller::ContentTask>	ContentInstaller::mProcessingQueue;
 std::list<IContentInstalledNotify*>		ContentInstaller::mNotification;
 
 void ContentInstaller::Enqueue(Window* window, ContentType type, const std::string contentName)
 {
+	Enqueue(window, type, ContentTask(type, contentName, contentName));
+}
+
+void ContentInstaller::Enqueue(Window* window, ContentType type, const PacmanPackage& package)
+{
+	Enqueue(window, type, ContentTask(type, package.getQueueKey(), package.name, package));
+}
+
+static bool contentTaskMatches(const ContentInstaller::ContentTask& item, ContentInstaller::ContentType type, const std::string& key)
+{
+	return item.type == type && item.key == key;
+}
+
+void ContentInstaller::Enqueue(Window* window, ContentType type, const ContentTask& task)
+{
 	std::unique_lock<std::mutex> lock(mLock);
 
 	for (auto item : mProcessingQueue)
-		if (item.first == type && item.second == contentName)
+		if (contentTaskMatches(item, type, task.key))
 			return;
 
 	for (auto item : mQueue)
-		if (item.first == type && item.second == contentName)
+		if (contentTaskMatches(item, type, task.key))
 			return;
 
-	mQueue.push_back(std::pair<int, std::string>(type, contentName));
+	mQueue.push_back(task);
 
 	if (mInstance == nullptr)
 		mInstance = new ContentInstaller(window);
@@ -38,14 +53,19 @@ bool ContentInstaller::IsInQueue(ContentType type, const std::string contentName
 	std::unique_lock<std::mutex> lock(mLock);
 
 	for (auto item : mProcessingQueue)
-		if (item.first == type && item.second == contentName)
+		if (contentTaskMatches(item, type, contentName))
 			return true;
 
 	for (auto item : mQueue)
-		if (item.first == type && item.second == contentName)
+		if (contentTaskMatches(item, type, contentName))
 			return true;
 
 	return false;
+}
+
+bool ContentInstaller::IsInQueue(ContentType type, const PacmanPackage& package)
+{
+	return IsInQueue(type, package.getQueueKey());
 }
 
 ContentInstaller::ContentInstaller(Window* window)
@@ -127,9 +147,9 @@ void ContentInstaller::threadUpdate()
 		std::pair<std::string, int> updateStatus;
 		bool success = false;
 
-		if (data.first == ContentType::CONTENT_THEME_INSTALL)
+		if (data.type == ContentType::CONTENT_THEME_INSTALL)
 		{
-			updateStatus = ApiSystem::getInstance()->installBatoceraTheme(data.second, [this](const std::string info)
+			updateStatus = ApiSystem::getInstance()->installBatoceraTheme(data.name, [this](const std::string info)
 			{
 				updateNotificationComponentContent(info);
 			});
@@ -137,7 +157,7 @@ void ContentInstaller::threadUpdate()
 			if (updateStatus.second == 0)
 			{
 				success = true;
-				mWindow->displayNotificationMessage(ICONINDEX + data.second + " : " + _("THEME INSTALLED SUCCESSFULLY"));
+				mWindow->displayNotificationMessage(ICONINDEX + data.name + " : " + _("THEME INSTALLED SUCCESSFULLY"));
 			}
 			else
 			{
@@ -146,9 +166,9 @@ void ContentInstaller::threadUpdate()
 			}
 
 		}
-		else if (data.first == ContentType::CONTENT_THEME_UNINSTALL)
+		else if (data.type == ContentType::CONTENT_THEME_UNINSTALL)
 		{
-			updateStatus = ApiSystem::getInstance()->uninstallBatoceraTheme(data.second, [this](const std::string info)
+			updateStatus = ApiSystem::getInstance()->uninstallBatoceraTheme(data.name, [this](const std::string info)
 			{
 				updateNotificationComponentContent(info);
 			});
@@ -156,7 +176,7 @@ void ContentInstaller::threadUpdate()
 			if (updateStatus.second == 0)
 			{
 				success = true;
-				mWindow->displayNotificationMessage(ICONINDEX + data.second + " : " + _("THEME UNINSTALLED SUCCESSFULLY"));
+				mWindow->displayNotificationMessage(ICONINDEX + data.name + " : " + _("THEME UNINSTALLED SUCCESSFULLY"));
 			}
 			else
 			{
@@ -165,9 +185,9 @@ void ContentInstaller::threadUpdate()
 			}
 
 		}
-		else if (data.first == ContentType::CONTENT_BEZEL_INSTALL)
+		else if (data.type == ContentType::CONTENT_BEZEL_INSTALL)
 		{
-			updateStatus = ApiSystem::getInstance()->installBatoceraBezel(data.second, [this](const std::string info)
+			updateStatus = ApiSystem::getInstance()->installBatoceraBezel(data.name, [this](const std::string info)
 			{
 				updateNotificationComponentContent(info);
 			});
@@ -175,7 +195,7 @@ void ContentInstaller::threadUpdate()
 			if (updateStatus.second == 0)
 			{
 				success = true;
-				mWindow->displayNotificationMessage(ICONINDEX + data.second + " : " + _("BEZELS INSTALLED SUCCESSFULLY"));
+				mWindow->displayNotificationMessage(ICONINDEX + data.name + " : " + _("BEZELS INSTALLED SUCCESSFULLY"));
 			}
 			else
 			{
@@ -183,9 +203,9 @@ void ContentInstaller::threadUpdate()
 				mWindow->displayNotificationMessage(ICONINDEX + error);
 			}
 		}
-		else if (data.first == ContentType::CONTENT_BEZEL_UNINSTALL)
+		else if (data.type == ContentType::CONTENT_BEZEL_UNINSTALL)
 		{
-			updateStatus = ApiSystem::getInstance()->uninstallBatoceraBezel(data.second, [this](const std::string info)
+			updateStatus = ApiSystem::getInstance()->uninstallBatoceraBezel(data.name, [this](const std::string info)
 			{
 				updateNotificationComponentContent(info);
 			});
@@ -193,7 +213,7 @@ void ContentInstaller::threadUpdate()
 			if (updateStatus.second == 0)
 			{
 				success = true;
-				mWindow->displayNotificationMessage(ICONINDEX + data.second + " : " + _("BEZELS UNINSTALLED SUCCESSFULLY"));
+				mWindow->displayNotificationMessage(ICONINDEX + data.name + " : " + _("BEZELS UNINSTALLED SUCCESSFULLY"));
 			}
 			else
 			{
@@ -201,9 +221,39 @@ void ContentInstaller::threadUpdate()
 				mWindow->displayNotificationMessage(ICONINDEX + error);
 			}
 		}
-		else if (data.first == ContentType::CONTENT_STORE_INSTALL)
+		else if (data.type == ContentType::CONTENT_STORE_INSTALL)
 		{
-			updateStatus = ApiSystem::getInstance()->installBatoceraStorePackage(data.second, [this](const std::string info)
+			if (data.package.isCustomFeed())
+				updateStatus = ApiSystem::getInstance()->installCustomContentPackage(data.package, [this](const std::string info)
+				{
+					updateNotificationComponentContent(info);
+				});
+			else
+				updateStatus = ApiSystem::getInstance()->installBatoceraStorePackage(data.name, [this](const std::string info)
+				{
+					updateNotificationComponentContent(info);
+				});
+
+			if (updateStatus.second == 0)
+			{
+				success = true;
+				mWindow->displayNotificationMessage(ICONINDEX + data.name + " : " + _("PACKAGE INSTALLED SUCCESSFULLY"));
+			}
+			else
+			{
+				std::string error = _("AN ERROR OCCURRED") + std::string(": ") + updateStatus.first;
+				mWindow->displayNotificationMessage(ICONINDEX + error);
+			}
+		}
+		else if (data.type == ContentType::CONTENT_STORE_UNINSTALL)
+		{
+			if (data.package.isCustomFeed())
+				updateStatus = ApiSystem::getInstance()->uninstallCustomContentPackage(data.package, [this](const std::string info)
+				{
+					updateNotificationComponentContent(info);
+				});
+			else
+				updateStatus = ApiSystem::getInstance()->uninstallBatoceraStorePackage(data.name, [this](const std::string info)
 			{
 				updateNotificationComponentContent(info);
 			});
@@ -211,25 +261,7 @@ void ContentInstaller::threadUpdate()
 			if (updateStatus.second == 0)
 			{
 				success = true;
-				mWindow->displayNotificationMessage(ICONINDEX + data.second + " : " + _("PACKAGE INSTALLED SUCCESSFULLY"));
-			}
-			else
-			{
-				std::string error = _("AN ERROR OCCURRED") + std::string(": ") + updateStatus.first;
-				mWindow->displayNotificationMessage(ICONINDEX + error);
-			}
-		}
-		else if (data.first == ContentType::CONTENT_STORE_UNINSTALL)
-		{
-			updateStatus = ApiSystem::getInstance()->uninstallBatoceraStorePackage(data.second, [this](const std::string info)
-			{
-				updateNotificationComponentContent(info);
-			});
-
-			if (updateStatus.second == 0)
-			{
-				success = true;
-				mWindow->displayNotificationMessage(ICONINDEX + data.second + " : " + _("PACKAGE REMOVED SUCCESSFULLY"));
+				mWindow->displayNotificationMessage(ICONINDEX + data.name + " : " + _("PACKAGE REMOVED SUCCESSFULLY"));
 			}
 			else
 			{
@@ -238,10 +270,17 @@ void ContentInstaller::threadUpdate()
 			}
 		}
 
-		OnContentInstalled(data.first, data.second, success);
+		OnContentInstalled(data.type, data.name, success);
 
 		lock.lock();
-		mProcessingQueue.remove(data);
+		for (auto it = mProcessingQueue.begin(); it != mProcessingQueue.end(); ++it)
+		{
+			if (it->type == data.type && it->key == data.key)
+			{
+				mProcessingQueue.erase(it);
+				break;
+			}
+		}
 	}
 
 	delete this;

@@ -54,6 +54,7 @@ struct PacmanPackage
 	{
 		download_size = 0;
 		installed_size = 0;
+		provider = "batocera-store";
 	}
 
 	std::string name;
@@ -74,8 +75,17 @@ struct PacmanPackage
 	std::vector<std::string> licenses;	
 
 	std::string arch;
+	std::string provider;
+	std::string queue_key;
+	std::string install_type;
+	std::string install_url;
+	std::string install_dir;
+	std::string uninstall_dir;
+	std::string branch;
 
-	bool isInstalled() { return status == "installed"; }
+	bool isInstalled() const { return status == "installed"; }
+	bool isCustomFeed() const { return provider == "custom-json"; }
+	std::string getQueueKey() const { return queue_key.empty() ? name : queue_key; }
 };
 
 struct PadInfo
@@ -307,8 +317,11 @@ public:
 	virtual std::string getRunningBoard();
 
 	std::vector<PacmanPackage> getBatoceraStorePackages();
+	std::vector<PacmanPackage> getCustomContentPackages(const std::vector<std::string>& urls);
 	std::pair<std::string, int> installBatoceraStorePackage(std::string name, const std::function<void(const std::string)>& func = nullptr);
 	std::pair<std::string, int> uninstallBatoceraStorePackage(std::string name, const std::function<void(const std::string)>& func = nullptr);
+	std::pair<std::string, int> installCustomContentPackage(const PacmanPackage& package, const std::function<void(const std::string)>& func = nullptr);
+	std::pair<std::string, int> uninstallCustomContentPackage(const PacmanPackage& package, const std::function<void(const std::string)>& func = nullptr);
 	void updateBatoceraStorePackageList();
 	void refreshBatoceraStorePackageList();
 

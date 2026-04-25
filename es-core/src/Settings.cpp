@@ -231,6 +231,7 @@ void Settings::setDefaults()
 	mStringMap["GameTransitionStyle"] = "auto";
 
 	mStringMap["ThemeSet"] = "";
+	mStringMap["CustomContentFeedUrls"] = "";
 	mStringMap["ScreenSaverBehavior"] = "dim";
 	mStringMap["GamelistViewStyle"] = "automatic";
 

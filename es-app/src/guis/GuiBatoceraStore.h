@@ -51,11 +51,15 @@ public:
 
 private:
 	static std::vector<PacmanPackage> queryPackages();
+	static std::vector<std::string> getCustomFeedUrls();
+	static void setCustomFeedUrls(const std::vector<std::string>& urls);
 	void loadPackagesAsync(bool updatePackageList = false, bool refreshOnly = true);
 	void loadList(bool updatePackageList, bool restoreIndex = true);
 	void processPackage(PacmanPackage package);
 	void centerWindow();
 	void showSearch();
+	void showFeedManager();
+	void resetTabs();
 
 	int				mReloadList;
 	std::vector<PacmanPackage> mPackages;

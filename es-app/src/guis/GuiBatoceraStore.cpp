@@ -1,6 +1,7 @@
 #include "guis/GuiBatoceraStore.h"
 
 #include "ApiSystem.h"
+#include "Settings.h"
 #include "components/OptionListComponent.h"
 #include "guis/GuiSettings.h"
 #include "views/ViewController.h"
@@ -49,8 +50,7 @@ GuiBatoceraStore::GuiBatoceraStore(Window* window)
 	mGrid.setEntry(mHeaderGrid, Vector2i(0, 0), false, true);
 
 	// Tabs
-	mTabs = std::make_shared<ComponentTab>(mWindow);
-	mGrid.setEntry(mTabs, Vector2i(0, 1), false, true, Vector2i(1, 1), GridFlags::BORDER_BOTTOM);
+	resetTabs();
 
 	// Entries
 	mList = std::make_shared<ComponentList>(mWindow);
@@ -60,6 +60,7 @@ GuiBatoceraStore::GuiBatoceraStore(Window* window)
 	// Buttons
 	std::vector< std::shared_ptr<ButtonComponent> > buttons;
 	buttons.push_back(std::make_shared<ButtonComponent>(mWindow, _("SEARCH"), _("SEARCH"), [this] {  showSearch(); }));
+	buttons.push_back(std::make_shared<ButtonComponent>(mWindow, _("JSON FEEDS"), _("JSON FEEDS"), [this] {  showFeedManager(); }));
 	buttons.push_back(std::make_shared<ButtonComponent>(mWindow, _("REFRESH"), _("REFRESH"), [this] {  loadPackagesAsync(true, true); }));
 	buttons.push_back(std::make_shared<ButtonComponent>(mWindow, _("UPDATE INSTALLED CONTENT"), _("UPDATE INSTALLED CONTENT"), [this] {  loadPackagesAsync(true, false); }));
 	buttons.push_back(std::make_shared<ButtonComponent>(mWindow, _("BACK"), _("BACK"), [this] { delete this; }));
@@ -79,6 +80,12 @@ GuiBatoceraStore::GuiBatoceraStore(Window* window)
 	centerWindow();
 
 	ContentInstaller::RegisterNotify(this);
+}
+
+void GuiBatoceraStore::resetTabs()
+{
+	mTabs = std::make_shared<ComponentTab>(mWindow);
+	mGrid.setEntry(mTabs, Vector2i(0, 1), false, true, Vector2i(1, 1), GridFlags::BORDER_BOTTOM);
 }
 
 GuiBatoceraStore::~GuiBatoceraStore()
@@ -162,6 +169,24 @@ static bool sortPackagesByGroup(PacmanPackage& sys1, PacmanPackage& sys2)
 	return sys1.group.compare(sys2.group) < 0;
 }
 
+std::vector<std::string> GuiBatoceraStore::getCustomFeedUrls()
+{
+	std::vector<std::string> urls;
+	for (auto& url : Utils::String::split(Settings::getInstance()->getString("CustomContentFeedUrls"), '\n'))
+	{
+		auto trimmed = Utils::String::trim(url);
+		if (!trimmed.empty())
+			urls.push_back(trimmed);
+	}
+
+	return urls;
+}
+
+void GuiBatoceraStore::setCustomFeedUrls(const std::vector<std::string>& urls)
+{
+	Settings::getInstance()->setString("CustomContentFeedUrls", Utils::String::join(urls, "\n"));
+}
+
 void GuiBatoceraStore::loadList(bool updatePackageList, bool restoreIndex)
 {
 	int idx = updatePackageList || !restoreIndex ? -1 : mList->getCursorIndex();
@@ -177,7 +202,13 @@ void GuiBatoceraStore::loadList(bool updatePackageList, bool restoreIndex)
 			repositories.insert(package.repository);
 	}
 
-	if (repositories.size() > 0 && mTabs->size() == 0 && mTabFilter.empty())
+	if (mTabFilter.empty() || (!mTabFilter.empty() && repositories.find(mTabFilter) == repositories.cend()))
+		mTabFilter = repositories.empty() ? "" : *std::min_element(repositories.cbegin(), repositories.cend());
+
+	if (repositories.size() > 0 || mTabs->size() > 0)
+		resetTabs();
+
+	if (repositories.size() > 0 && mTabs->size() == 0)
 	{
 		std::vector<std::string> gps;
 		for (auto gp : repositories)
@@ -185,9 +216,7 @@ void GuiBatoceraStore::loadList(bool updatePackageList, bool restoreIndex)
 
 		std::sort(gps.begin(), gps.end());
 		for (auto group : gps)
-			mTabs->addTab(group);
-
-		mTabFilter = gps[0];
+			mTabs->addTab(group, group, group == mTabFilter);
 
 		mTabs->setCursorChangedCallback([&](const CursorState& /*state*/)
 		{
@@ -254,6 +283,8 @@ std::vector<PacmanPackage> GuiBatoceraStore::queryPackages()
 {
 	auto systemNames = SystemData::getKnownSystemNames();
 	auto packages = ApiSystem::getInstance()->getBatoceraStorePackages();
+	auto customPackages = ApiSystem::getInstance()->getCustomContentPackages(getCustomFeedUrls());
+	packages.insert(packages.end(), customPackages.cbegin(), customPackages.cend());
 
 	std::vector<PacmanPackage> copy;
 	for (auto& package : packages)
@@ -323,7 +354,7 @@ void GuiBatoceraStore::processPackage(PacmanPackage package)
 			snprintf(trstring, 1024, _("'%s' ADDED TO DOWNLOAD QUEUE").c_str(), package.name.c_str());
 			mWindow->displayNotificationMessage(_U("\uF019 ") + std::string(trstring));
 
-			ContentInstaller::Enqueue(mWindow, ContentInstaller::CONTENT_STORE_INSTALL, package.name);
+			ContentInstaller::Enqueue(mWindow, ContentInstaller::CONTENT_STORE_INSTALL, package);
 			mReloadList = 2;
 
 			msgBox->close();
@@ -333,7 +364,7 @@ void GuiBatoceraStore::processPackage(PacmanPackage package)
 		{
 			mWindow->displayNotificationMessage(_U("\uF014 ") + _("UNINSTALLATION ADDED TO QUEUE"));
 
-			ContentInstaller::Enqueue(mWindow, ContentInstaller::CONTENT_STORE_UNINSTALL, package.name);			
+			ContentInstaller::Enqueue(mWindow, ContentInstaller::CONTENT_STORE_UNINSTALL, package);
 			mReloadList = 2;
 
 			msgBox->close();
@@ -347,7 +378,7 @@ void GuiBatoceraStore::processPackage(PacmanPackage package)
 			snprintf(trstring, 1024, _("'%s' ADDED TO DOWNLOAD QUEUE").c_str(), package.name.c_str());
 			mWindow->displayNotificationMessage(_U("\uF019 ") + std::string(trstring));
 
-			ContentInstaller::Enqueue(mWindow, ContentInstaller::CONTENT_STORE_INSTALL, package.name);
+			ContentInstaller::Enqueue(mWindow, ContentInstaller::CONTENT_STORE_INSTALL, package);
 			mReloadList = 2;
 
 			msgBox->close();
@@ -404,6 +435,33 @@ void GuiBatoceraStore::showSearch()
 		mWindow->pushGui(new GuiTextEditPopup(mWindow, _("SEARCH"), mTextFilter, updateVal, false));
 }
 
+void GuiBatoceraStore::showFeedManager()
+{
+	auto updateFeeds = [this](const std::string& newVal)
+	{
+		std::vector<std::string> urls;
+		for (auto& line : Utils::String::split(newVal, '\n'))
+		{
+			auto trimmed = Utils::String::trim(line);
+			if (!trimmed.empty())
+				urls.push_back(trimmed);
+		}
+
+		setCustomFeedUrls(urls);
+		mTabFilter.clear();
+		mTextFilter.clear();
+		mReloadList = 1;
+	};
+
+	auto currentFeeds = Utils::String::join(getCustomFeedUrls(), "\n");
+	const std::string title = _("CUSTOM JSON FEEDS") + std::string("\n") + _("ONE URL PER LINE");
+
+	if (Settings::getInstance()->getBool("UseOSK"))
+		mWindow->pushGui(new GuiTextEditPopupKeyboard(mWindow, title, currentFeeds, updateFeeds, true));
+	else
+		mWindow->pushGui(new GuiTextEditPopup(mWindow, title, currentFeeds, updateFeeds, true));
+}
+
 std::vector<HelpPrompt> GuiBatoceraStore::getHelpPrompts()
 {
 	std::vector<HelpPrompt> prompts = mList->getHelpPrompts();
@@ -425,7 +483,7 @@ GuiBatoceraStoreEntry::GuiBatoceraStoreEntry(Window* window, PacmanPackage& entr
 
 	bool isInstalled = entry.isInstalled();
 
-	mIsPending = ContentInstaller::IsInQueue(ContentInstaller::CONTENT_STORE_INSTALL, entry.name) || ContentInstaller::IsInQueue(ContentInstaller::CONTENT_STORE_UNINSTALL, entry.name);
+	mIsPending = ContentInstaller::IsInQueue(ContentInstaller::CONTENT_STORE_INSTALL, entry) || ContentInstaller::IsInQueue(ContentInstaller::CONTENT_STORE_UNINSTALL, entry);
 
 	mImage = std::make_shared<TextComponent>(mWindow);
 	mImage->setColor(theme->Text.color);
@@ -459,6 +517,9 @@ GuiBatoceraStoreEntry::GuiBatoceraStoreEntry(Window* window, PacmanPackage& entr
 
 	if (!entry.repository.empty() && entry.repository != "batocera")
 		details = details + _U("  \uf114  ") + entry.repository;
+
+	if (entry.isCustomFeed())
+		details = details + _U("  \uf15b  ") + _("JSON");
 
 	if (entry.installed_size > 0)
 		details = details + _U("  \uf0A0  ") + Utils::FileSystem::kiloBytesToString(entry.installed_size);

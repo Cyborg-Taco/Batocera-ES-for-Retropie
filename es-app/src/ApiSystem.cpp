@@ -26,6 +26,7 @@
 #include <thread>
 #include <stdio.h>
 #include <string.h>
+#include <functional>
 #include <sys/types.h>
 #include <algorithm>
 #include <fstream>
@@ -2000,6 +2001,209 @@ std::vector<std::string> ApiSystem::extractPdfImages(const std::string& fileName
 	return ret;
 }
 
+static std::string jsonStringOrDefault(const rapidjson::Value& val, const std::string& name, const std::string& defaultValue = "")
+{
+	if (!val.IsObject() || !val.HasMember(name.c_str()))
+		return defaultValue;
+
+	const auto& field = val[name.c_str()];
+	if (field.IsString())
+		return field.GetString();
+
+	if (field.IsInt64())
+		return std::to_string(field.GetInt64());
+
+	if (field.IsUint64())
+		return std::to_string(field.GetUint64());
+
+	return defaultValue;
+}
+
+static int64_t jsonInt64OrDefault(const rapidjson::Value& val, const std::string& name, int64_t defaultValue = 0)
+{
+	if (!val.IsObject() || !val.HasMember(name.c_str()))
+		return defaultValue;
+
+	const auto& field = val[name.c_str()];
+	if (field.IsInt64())
+		return field.GetInt64();
+	if (field.IsUint64())
+		return (int64_t)field.GetUint64();
+	if (field.IsInt())
+		return field.GetInt();
+	if (field.IsUint())
+		return field.GetUint();
+
+	return defaultValue;
+}
+
+static std::string getUrlBasePath(const std::string& url)
+{
+	auto pos = url.find_last_of('/');
+	if (pos == std::string::npos)
+		return url;
+
+	return url.substr(0, pos + 1);
+}
+
+static std::string resolveCustomFeedUrl(const std::string& feedUrl, const std::string& value)
+{
+	if (value.empty() || value.find("://") != std::string::npos)
+		return value;
+
+	if (!value.empty() && value[0] == '/')
+	{
+		auto schemePos = feedUrl.find("://");
+		if (schemePos != std::string::npos)
+		{
+			auto hostPos = feedUrl.find('/', schemePos + 3);
+			if (hostPos != std::string::npos)
+				return feedUrl.substr(0, hostPos) + value;
+
+			return feedUrl + value;
+		}
+	}
+
+	return getUrlBasePath(feedUrl) + value;
+}
+
+static std::string normalizeCustomInstallType(const std::string& installType, const std::string& installUrl)
+{
+	if (!installType.empty())
+		return Utils::String::toLower(installType);
+
+	if (Utils::String::containsIgnoreCase(installUrl, "github.com"))
+		return "github";
+
+	return "zip";
+}
+
+static std::string resolveCustomInstallPath(const std::string& path)
+{
+	if (path.empty())
+		return "";
+
+	if (Utils::FileSystem::isAbsolute(path))
+		return path;
+
+	return Utils::FileSystem::getCanonicalPath(Paths::getRootPath() + "/" + path);
+}
+
+static bool isUnsafeCustomContentPath(const std::string& path)
+{
+	if (path.empty())
+		return true;
+
+	auto normalized = Utils::FileSystem::getCanonicalPath(path);
+	if (normalized == "/" || normalized == "\\" || normalized == Paths::getRootPath() || normalized == Paths::getUserEmulationStationPath())
+		return true;
+
+	return normalized.length() < 5;
+}
+
+static bool downloadCustomArchive(const std::string& url, const std::string& fileName, const std::string& label, const std::function<void(const std::string)>& func)
+{
+	if (func != nullptr)
+		func(_("Downloading") + std::string(" ") + label);
+
+	HttpReq httpreq(url, fileName);
+	int currentPercent = -1;
+
+	while (httpreq.status() == HttpReq::REQ_IN_PROGRESS)
+	{
+		int percent = httpreq.getPercent();
+		if (percent >= 0 && percent != currentPercent && func != nullptr)
+		{
+			func(_("Downloading") + std::string(" ") + label + " >>> " + std::to_string(percent) + " %");
+			currentPercent = percent;
+		}
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(20));
+	}
+
+	return httpreq.status() == HttpReq::REQ_SUCCESS;
+}
+
+std::vector<PacmanPackage> ApiSystem::getCustomContentPackages(const std::vector<std::string>& urls)
+{
+	std::vector<PacmanPackage> packages;
+
+	for (auto rawUrl : urls)
+	{
+		std::string url = Utils::String::trim(rawUrl);
+		if (url.empty())
+			continue;
+
+		HttpReq httpreq(url);
+		if (!httpreq.wait())
+		{
+			LOG(LogError) << "Unable to fetch custom content feed: " << url;
+			continue;
+		}
+
+		rapidjson::Document doc;
+		doc.Parse(httpreq.getContent().c_str());
+		if (doc.HasParseError())
+		{
+			LOG(LogError) << "Unable to parse custom content feed: " << url;
+			continue;
+		}
+
+		const rapidjson::Value* entries = nullptr;
+		if (doc.IsArray())
+			entries = &doc;
+		else if (doc.IsObject() && doc.HasMember("packages") && doc["packages"].IsArray())
+			entries = &doc["packages"];
+		else if (doc.IsObject() && doc.HasMember("data") && doc["data"].IsArray())
+			entries = &doc["data"];
+
+		if (entries == nullptr)
+			continue;
+
+		const std::string defaultRepository = doc.IsObject() ? jsonStringOrDefault(doc, "repository", Utils::FileSystem::getStem(Utils::FileSystem::getFileName(url))) : Utils::FileSystem::getStem(Utils::FileSystem::getFileName(url));
+		const std::string defaultGroup = doc.IsObject() ? jsonStringOrDefault(doc, "group", "CUSTOM") : "CUSTOM";
+		const std::string defaultPackager = doc.IsObject() ? jsonStringOrDefault(doc, "packager", _("CUSTOM")) : _("CUSTOM");
+		const std::string defaultBranch = doc.IsObject() ? jsonStringOrDefault(doc, "branch", "master") : "master";
+		const std::string defaultInstallType = doc.IsObject() ? jsonStringOrDefault(doc, "install_type") : "";
+
+		for (auto& item : entries->GetArray())
+		{
+			if (!item.IsObject())
+				continue;
+
+			PacmanPackage package;
+			package.provider = "custom-json";
+			package.name = jsonStringOrDefault(item, "name");
+			if (package.name.empty())
+				continue;
+
+			package.description = jsonStringOrDefault(item, "description", package.name);
+			package.available_version = jsonStringOrDefault(item, "available_version", jsonStringOrDefault(item, "version"));
+			package.packager = jsonStringOrDefault(item, "packager", jsonStringOrDefault(item, "author", defaultPackager));
+			package.group = jsonStringOrDefault(item, "group", defaultGroup);
+			package.repository = jsonStringOrDefault(item, "repository", defaultRepository);
+			package.arch = jsonStringOrDefault(item, "arch");
+			package.preview_url = resolveCustomFeedUrl(url, jsonStringOrDefault(item, "preview_url", jsonStringOrDefault(item, "image")));
+			package.url = resolveCustomFeedUrl(url, jsonStringOrDefault(item, "url"));
+			package.install_url = resolveCustomFeedUrl(url, jsonStringOrDefault(item, "install_url", package.url));
+			package.install_dir = resolveCustomInstallPath(jsonStringOrDefault(item, "install_dir"));
+			package.uninstall_dir = resolveCustomInstallPath(jsonStringOrDefault(item, "uninstall_dir", package.install_dir));
+			package.branch = jsonStringOrDefault(item, "branch", defaultBranch);
+			package.install_type = normalizeCustomInstallType(jsonStringOrDefault(item, "install_type", defaultInstallType), package.install_url);
+			package.download_size = (size_t)jsonInt64OrDefault(item, "download_size");
+			package.installed_size = (size_t)jsonInt64OrDefault(item, "installed_size");
+
+			auto installPath = package.install_dir.empty() ? package.uninstall_dir : package.install_dir;
+			package.status = (!installPath.empty() && Utils::FileSystem::exists(installPath)) ? "installed" : "available";
+			package.queue_key = package.provider + "|" + package.install_type + "|" + package.install_url + "|" + installPath;
+
+			packages.push_back(package);
+		}
+	}
+
+	return packages;
+}
+
 
 std::vector<PacmanPackage> ApiSystem::getBatoceraStorePackages()
 {
@@ -2082,6 +2286,99 @@ std::pair<std::string, int> ApiSystem::installBatoceraStorePackage(std::string n
 std::pair<std::string, int> ApiSystem::uninstallBatoceraStorePackage(std::string name, const std::function<void(const std::string)>& func)
 {
 	return executeScript("batocera-store remove \"" + name + "\"", func);
+}
+
+std::pair<std::string, int> ApiSystem::installCustomContentPackage(const PacmanPackage& package, const std::function<void(const std::string)>& func)
+{
+	const std::string installPath = resolveCustomInstallPath(package.install_dir);
+	if (package.install_url.empty() || installPath.empty() || isUnsafeCustomContentPath(installPath))
+		return std::pair<std::string, int>(std::string("Invalid custom content package definition"), 1);
+
+	const std::string tmpRoot = Paths::getUserEmulationStationPath() + "/customcontent";
+	const std::string tmpName = std::to_string(std::hash<std::string>{}(package.getQueueKey()));
+	const std::string archivePath = tmpRoot + "/" + tmpName + ".zip";
+	const std::string extractPath = tmpRoot + "/extract-" + tmpName;
+
+	Utils::FileSystem::createDirectory(tmpRoot);
+	Utils::FileSystem::removeFile(archivePath);
+	if (Utils::FileSystem::exists(extractPath))
+		Utils::FileSystem::deleteDirectoryFiles(extractPath, true);
+
+	if (!downloadCustomArchive(package.install_url, archivePath, package.name, func))
+		return std::pair<std::string, int>(std::string("Download failed"), 1);
+
+	std::string installType = normalizeCustomInstallType(package.install_type, package.install_url);
+	if (installType == "github")
+	{
+		if (func != nullptr)
+			func(_("Extracting") + std::string(" ") + package.name);
+
+		Utils::FileSystem::createDirectory(extractPath);
+		if (!unzipFile(archivePath, extractPath))
+		{
+			Utils::FileSystem::removeFile(archivePath);
+			return std::pair<std::string, int>(std::string("Extraction failed"), 1);
+		}
+
+		auto extractedItems = Utils::FileSystem::getDirContent(extractPath);
+		std::string folderToInstall;
+		for (auto item : extractedItems)
+		{
+			if (Utils::FileSystem::isDirectory(item))
+			{
+				folderToInstall = item;
+				break;
+			}
+		}
+
+		if (folderToInstall.empty())
+		{
+			Utils::FileSystem::removeFile(archivePath);
+			Utils::FileSystem::deleteDirectoryFiles(extractPath, true);
+			return std::pair<std::string, int>(std::string("Archive did not contain a root folder"), 1);
+		}
+
+		Utils::FileSystem::createDirectory(Utils::FileSystem::getParent(installPath));
+		if (Utils::FileSystem::exists(installPath))
+			Utils::FileSystem::deleteDirectoryFiles(installPath, true);
+
+		Utils::FileSystem::renameFile(folderToInstall, installPath);
+		Utils::FileSystem::deleteDirectoryFiles(extractPath, true);
+	}
+	else
+	{
+		if (func != nullptr)
+			func(_("Extracting") + std::string(" ") + package.name);
+
+		Utils::FileSystem::createDirectory(Utils::FileSystem::getParent(installPath));
+		if (Utils::FileSystem::exists(installPath))
+			Utils::FileSystem::deleteDirectoryFiles(installPath, true);
+		Utils::FileSystem::createDirectory(installPath);
+
+		if (!unzipFile(archivePath, installPath))
+		{
+			Utils::FileSystem::removeFile(archivePath);
+			return std::pair<std::string, int>(std::string("Extraction failed"), 1);
+		}
+	}
+
+	Utils::FileSystem::removeFile(archivePath);
+	return std::pair<std::string, int>(std::string("OK"), 0);
+}
+
+std::pair<std::string, int> ApiSystem::uninstallCustomContentPackage(const PacmanPackage& package, const std::function<void(const std::string)>& func)
+{
+	(void)func;
+
+	const std::string uninstallPath = resolveCustomInstallPath(package.uninstall_dir.empty() ? package.install_dir : package.uninstall_dir);
+	if (uninstallPath.empty() || isUnsafeCustomContentPath(uninstallPath))
+		return std::pair<std::string, int>(std::string("Invalid uninstall path"), 1);
+
+	if (!Utils::FileSystem::exists(uninstallPath))
+		return std::pair<std::string, int>(std::string("Content is not installed"), 1);
+
+	Utils::FileSystem::deleteDirectoryFiles(uninstallPath, true);
+	return std::pair<std::string, int>(std::string("OK"), 0);
 }
 
 void ApiSystem::refreshBatoceraStorePackageList()
