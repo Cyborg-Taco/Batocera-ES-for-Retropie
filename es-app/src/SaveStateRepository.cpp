@@ -20,6 +20,7 @@ SaveStateRepository::SaveStateRepository(SystemData* system)
 {
 	_newGame = nullptr;
 	_autosave = nullptr;
+	_launchSlot = nullptr;
 
 	mSystem = system;
 	refresh();
@@ -306,10 +307,30 @@ SaveState* SaveStateRepository::getGameAutoSave(FileData* game)
 
 	if (current)
 	{
+		if (_launchSlot == nullptr)
+			_launchSlot = new SaveState(-1);
+
 		auto states = getSaveStates(game, current);
-		auto it = std::find_if(states.cbegin(), states.cend(), [](const SaveState* x) { return x->slot == -1; });
+		auto it = std::find_if(states.cbegin(), states.cend(), [current](const SaveState* x) { return x->slot == current->firstslot; });
 		if (it != states.cend())
 			return *it;
+
+		std::string rom = current->nofileextension ? Utils::FileSystem::getStem(game->getPath()) : Utils::FileSystem::getFileName(game->getPath());
+		std::string directory = current->getDirectory(mSystem);
+
+		_launchSlot->config = current;
+		_launchSlot->rom = rom;
+		_launchSlot->slot = current->firstslot;
+		_launchSlot->fileGenerator = Utils::String::replace(current->file, "{{romfilename}}", rom);
+		_launchSlot->imageGenerator = Utils::String::replace(current->image, "{{romfilename}}", rom);
+		_launchSlot->autosaveFileGenerator = Utils::String::replace(current->autosave_file.empty() ? current->file : current->autosave_file, "{{romfilename}}", rom);
+		_launchSlot->autosaveImageGenerator = Utils::String::replace(current->autosave_image.empty() ? current->image : current->autosave_image, "{{romfilename}}", rom);
+		_launchSlot->fileName = Utils::FileSystem::combine(directory, _launchSlot->makeStateFilename(_launchSlot->slot, false));
+		_launchSlot->screenshot = Utils::FileSystem::combine(directory, _launchSlot->makeStateFilename(_launchSlot->slot, false, true));
+		_launchSlot->racommands = current->racommands;
+		_launchSlot->hasAutosave = current->autosave;
+		_launchSlot->forceFixedSlotAutosave = true;
+		return _launchSlot;
 	}
 
 	return getDefaultAutoSaveSaveState();

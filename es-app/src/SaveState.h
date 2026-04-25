@@ -21,6 +21,7 @@ struct SaveState
 	std::string autosaveImageGenerator;
   	bool hasAutosave;
   	bool racommands;
+	bool forceFixedSlotAutosave;
 	std::string getScreenShot() const;
 	int slot;
 
@@ -44,6 +45,7 @@ private:
 		slot = -99;
 		hasAutosave = false;
 		racommands = false;
+		forceFixedSlotAutosave = false;
 	}
 
 
@@ -52,6 +54,7 @@ private:
 		slot = slotId;
 		hasAutosave = false;
 		racommands = false;
+		forceFixedSlotAutosave = false;
 	}
 
 	std::string mAutoFileBackup;

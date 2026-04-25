@@ -123,6 +123,17 @@ std::string SaveState::setupSaveState(FileData* game, const std::string& command
 		return cmd;
 	}
 
+	if (forceFixedSlotAutosave)
+	{
+		if (racommands)
+			return cmd + " -autosave 1 -state_slot " + std::to_string(slot);
+
+		if (!fileName.empty())
+			return cmd + " -state_slot " + std::to_string(slot) + " -state_file \"" + fileName + "\"";
+
+		return cmd + " -state_slot " + std::to_string(slot);
+	}
+
 	bool incrementalSaveStates = SystemConf::getIncrementalSaveStates() && /*hasAutosave && */supportsIncremental;
 	std::string autoFilename = makeAutoSaveFilename();
 	std::string autoImage = makeAutoSaveFilename(true, true);
