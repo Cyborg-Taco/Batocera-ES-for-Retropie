@@ -43,6 +43,5 @@ private:
 
 	static SaveState* _empty;
 	SaveState* _autosave;
-	SaveState* _launchSlot;
 	SaveState* _newGame;
 };

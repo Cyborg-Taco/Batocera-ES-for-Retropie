@@ -236,7 +236,7 @@ SaveStateConfigFile::SaveStateConfigFile()
 			emul->autosave_file = readXmlValue(emulatorNode, "autosave_file");
 			emul->autosave_image = readXmlValue(emulatorNode, "autosave_image");
 			emul->incremental = readXmlValue(emulatorNode, "incremental") == "true";
-			emul->racommands = readXmlValue(emulatorNode, "racommands", emul->emulator == "retroarch" ? "true" : "false") == "true";
+			emul->racommands = false;
 
 			mSaveStateConfigs[emul->emulator] = emul;
 			
